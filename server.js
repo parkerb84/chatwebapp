@@ -25,26 +25,28 @@ app.get('/messages', (req, res) => {
 })
 
 app.post('/messages', async (req, res) => {
-  var message = new Message(req.body)
+  try {
+    var message = new Message(req.body)
   
-  var savedmessage = await message.save()
-  
-  console.log('saved')
-  
-  var censored = await Message.findOne({message: 'badword'})
+    var savedmessage = await message.save()
     
-  if(censored) 
-    await Message.remove({_id: censored.id})
-  else
-    io.emit('message', req.body)
-
-  res.sendStatus(200)
+    console.log('saved')
+    
+    var censored = await Message.findOne({message: 'badword'})
+      
+    if(censored) 
+      await Message.remove({_id: censored.id})
+    else
+      io.emit('message', req.body)
+  
+    res.sendStatus(200)
+  } catch(error) {
+    res.sendStatus(500)
+    return console.error(error)
+  } finally {
+    console.log("Message Posted to Chat")
+  }
 }) 
-  // .catch((err) => {
-  //   res.sendStatus(500)
-  //   return console.error(err)
-  // })
-
 
 io.on('connection', (socket) => {
   console.log('A user connected')
