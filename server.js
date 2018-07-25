@@ -9,6 +9,8 @@ app.use(express.static(__dirname))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 
+mongoose.Promise = Promise
+
 var dbUrl = 'mongodb://user:Tester1@ds245901.mlab.com:45901/chatwebapp'
 
 var Message = mongoose.model('Message', {
@@ -24,11 +26,22 @@ app.get('/messages', (req, res) => {
 
 app.post('/messages', (req, res) => {
   var message = new Message(req.body)
-  message.save((err) => {
-    if (err)
-      sendStatus(500)
+  message.save()
+  .then(() => {
+    console.log('saved')
+    return Message.findOne({message: 'badword'})
+  })
+  .then( censored => {
+    if(censored) {
+      console.log('Censored words found', censored)
+      return Message.remove({_id: censored.id})
+    }
     io.emit('message', req.body)
     res.sendStatus(200)
+  }) 
+  .catch((err) => {
+    res.sendStatus(500)
+    return console.error(err)
   })
 })
 
