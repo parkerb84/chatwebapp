@@ -21,3 +21,18 @@ describe('Get Messages', () => {
     })
   })
 })
+
+describe('Get Messages from user', () => {
+  it('Should return 200 Ok', (done) => {
+    request.get('http://localhost:3000/messages/Tim', (err, res) => {
+      expect(res.statusCode).toEqual(200)
+      done()
+    })
+  })
+  it('Name should be Tim', (done) => {
+    request.get('http://localhost:3000/messages/Tim', (err, res) => {
+      expect(JSON.parse(res.body)[0].name).toEqual('Tim')
+      done()
+    })
+  })
+})
